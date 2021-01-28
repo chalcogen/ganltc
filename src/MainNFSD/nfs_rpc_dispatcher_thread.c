@@ -65,6 +65,8 @@
 #define NFS_options NFS_pcp.core_options
 #define NFS_program NFS_pcp.program
 
+int nfs_udp_fd = -1;
+
 /**
  * TI-RPC event channels.  Each channel is a thread servicing an event
  * demultiplexer.
@@ -829,6 +831,9 @@ static int Allocate_sockets_V4(int p)
 		return -1;
 	}
 
+        if (p == P_NFS && nfs_udp_fd == -1)
+                nfs_udp_fd = udp_socket[p];
+
 	tcp_socket[p] = socket(AF_INET,
 			       SOCK_STREAM,
 			       IPPROTO_TCP);
@@ -922,6 +927,9 @@ static void Allocate_sockets(void)
 					 "Cannot allocate a udp socket for %s, error %d(%s)",
 					 tags[p], errno, strerror(errno));
 			}
+
+                        if (p == P_NFS && udp_socket[p] != -1)
+                                nfs_udp_fd = udp_socket[p];
 
 			tcp_socket[p] = socket(AF_INET6,
 					       SOCK_STREAM,
